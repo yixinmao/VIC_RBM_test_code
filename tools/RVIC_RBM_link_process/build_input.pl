@@ -171,7 +171,7 @@ chomp($zz=<CONTROL>);
 open FULLDATA,">FullData.Cells";
 open ROUTINIT,">Rout.Cells.init";
 open ROUT,">Rout.Cells";
-printf NETWORK "%10d%10d%10d\n",$start_date,$end_date,$no_time_steps_per_day;
+printf NETWORK "%s %s\n",$start_date,$end_date;
 while ($zz=<TOPO>) {
   if ($zz=~/STREAMNAME/) {
      $nh++;
