@@ -168,7 +168,6 @@ chomp($zz=<CONTROL>);
 #
 #  Added file open to write files for rout program\n";
 #
-open FULLDATA,">FullData.Cells";
 open ROUTINIT,">Rout.Cells.init";
 open ROUT,">Rout.Cells";
 printf NETWORK "%s %s\n",$start_date,$end_date;
