@@ -40,7 +40,15 @@ if ($no_time_steps_per_day>1) {
 #  and output directory for RBM network file
 #
 chomp($zz=<CONTROL>);
+(undef,$output_dir)=split/:/,$zz;
+$output_dir=~s/^\s+//;
+print "Output direcotory: $output_dir\n";
+
 chomp($zz=<CONTROL>);
+(undef,$basin_code)=split/:/,$zz;
+$basin_code=~s/^\s+//;
+print "Basin code: $basin_code\n";
+
 chomp($zz=<CONTROL>);
 (undef,$topo_file)=split/:/,$zz;
 $topo_file=~s/^\s+//;
@@ -168,8 +176,8 @@ chomp($zz=<CONTROL>);
 #
 #  Added file open to write files for rout program\n";
 #
-open ROUTINIT,">Rout.Cells.init";
-open ROUT,">Rout.Cells";
+open ROUTINIT,">".$output_dir."/".$basin_code.".Rout.Cells.init";
+open ROUT,">".$output_dir."/".$basin_code.".Rout.Cells";
 printf NETWORK "%s %s\n",$start_date,$end_date;
 while ($zz=<TOPO>) {
   if ($zz=~/STREAMNAME/) {

@@ -18,6 +18,8 @@ cfg = my_functions.read_config(sys.argv[1])  # Read config file
 flowdir_asc = cfg['INPUT']['flowdir_asc']
 # Template control file for RBM parameter preparation
 # The following options will be filled in:
+#   - <OUTPUT_DIR> # Directory for output routing station files
+#   - <BASIN_CODE> # basin_code
 #   - <TOPOLOGY_FILE>
 #   - <NETWORK_FILE>  # RBM control file to be generated
 #   - <MOHSENI_FILE>
@@ -90,6 +92,10 @@ f = open(control_template, 'r')
 content = f.read()
 f.close()
 #=== Replace options ===#
+content = content.replace('<OUTPUT_DIR>', \
+                          '{}'.format(output_tmp_dir))
+content = content.replace('<BASIN_CODE>', \
+                          '{}'.format(basin_code))
 content = content.replace('<TOPOLOGY_FILE>', \
                           '{}/{}.Topology'.format(output_tmp_dir, basin_code))
 content = content.replace('<NETWORK_FILE>', \
