@@ -1,0 +1,10 @@
+Link RVIC output and RBM
+
+#============================================================#
+Step 1. Generate routing station file and RBM control file
+#============================================================#
+Run './prepare_RBM_param.py' with a config file
+    - Generate a routing station file (for the next step to generate flow and energy file)
+    - Generate RBM control file (with running period and flow and energy file missing and to be subsitute)
+
+

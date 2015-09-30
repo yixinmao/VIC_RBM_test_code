@@ -1,6 +1,10 @@
 #!/usr/local/anaconda/bin/python
 
-# This script
+# This script generates:
+#   - A routing station file (for the next step to generate flow and energy file)
+#   - RBM control file (with running period and flow and energy file missing and to be subsitute)
+# Note:
+#   - For different basin or different Mohseni parameters, this script needs to be rerun
 
 import numpy as np
 import sys
@@ -52,12 +56,12 @@ output_tmp_dir = cfg['OUTPUT']['output_tmp_dir']
 # Basin code, will be used as basename for topology and Mohseni parameter files
 basin_code = cfg['OUTPUT']['basin_code']
 
-##==========================================================#
-## Generate topology file
-##==========================================================#
-#subprocess.call('perl {} {} {}/{}.Topology'\
-#                    .format(topo_pl, flowdir_asc, output_tmp_dir, basin_code), \
-#                shell=True)
+#==========================================================#
+# Generate topology file
+#==========================================================#
+subprocess.call('perl {} {} {}/{}.Topology'\
+                    .format(topo_pl, flowdir_asc, output_tmp_dir, basin_code), \
+                shell=True)
 
 #==========================================================#
 # Generate Mohseni parameter files
