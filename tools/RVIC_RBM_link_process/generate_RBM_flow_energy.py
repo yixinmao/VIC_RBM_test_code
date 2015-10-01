@@ -52,16 +52,13 @@ while 1:
         break
     if line.split()[0]=="1":  # if this is a flow cell (i.e., not the end of a reach)
         lat_lon = line.split()[2]
-        list_flow_lat_lon.append([float(lat_lon.split('_')[0]), \
-                                  float(lat_lon.split('_')[1])])
-        list_energy_lat_lon.append([float(lat_lon.split('_')[0]), \
-                                    float(lat_lon.split('_')[1])])
+        list_flow_lat_lon.append(lat_lon)
+        list_energy_lat_lon.append(lat_lon)
         line = f.readline().rstrip("\n")  # Read the next line - None or path for uh_s file
     elif line.split()[0]=="0":  # if this is NOT a flow cell (i.e., the end of a reach)
                                 # Only energy grid cell
         lat_lon = line.split()[2]
-        list_energy_lat_lon.append([float(lat_lon.split('_')[0]), \
-                                    float(lat_lon.split('_')[1])])
+        list_energy_lat_lon.append(lat_lon)
 #=== Check whether the number of flow/energy cells are correct ===#
 if len(list_flow_lat_lon)!=n_flow or len(list_energy_lat_lon)!=n_energy:
     print 'Error: incorrect number of flow/energy cells!'
@@ -97,29 +94,48 @@ for var in ['Tair', 'vp', 'Shortwave', 'Longwave', 'Density', 'Pressure', 'Wind'
 print 'Converting units...'
 vic_energy_daily['vp'] = vic_energy_daily['vp'] * 10.0 # convert [kPa] to [mb]
 vic_energy_daily['Shortwave'] = vic_energy_daily['Shortwave'] \
-                                * 2.388 * np.power(10, -4) # convert [W/m2] to [mm*K/s]
+                                * 2.388 * pow(10, -4) # convert [W/m2] to [mm*K/s]
 vic_energy_daily['Longwave'] = vic_energy_daily['Longwave'] \
-                               * 2.388 * np.power(10, -4) # convert [W/m2] to [mm*K/s]
+                               * 2.388 * pow(10, -4) # convert [W/m2] to [mm*K/s]
 vic_energy_daily['Pressure'] = vic_energy_daily['Pressure'] * 10.0 # convert [kPa] to [mb]
 
 #====================================================#
-# Writing data to file
+# Rearrange data
 #====================================================#
-#=== Write energy data ===#
-f = open(cfg['OUTPUT']['rbm_energy_file'], 'w')
-for i, date in enumerate(vic_energy_daily['Tair'].coords['date']):
-    print 'Writing energy data to file, day {}...'.format(i+1)
-    for j, lat_lon in enumerate(list_energy_lat_lon):
-        lat = lat_lon[0]
-        lon = lat_lon[1]
-        f.write('{:d} {:.1f} {:.1f} {:.4f} {:.4f} {:.3f} {:.1f} {:.1f}\n'\
-                .format(j+1, float(vic_energy_daily['Tair'].loc[date, lat, lon].values), \
-                        float(vic_energy_daily['vp'].loc[date, lat, lon].values), \
-                        float(vic_energy_daily['Shortwave'].loc[date, lat, lon].values), \
-                        float(vic_energy_daily['Longwave'].loc[date, lat, lon].values), \
-                        float(vic_energy_daily['Density'].loc[date, lat, lon].values), \
-                        float(vic_energy_daily['Pressure'].loc[date, lat, lon].values), \
-                        float(vic_energy_daily['Wind'].loc[date, lat, lon].values)))
+#=== Put data for each grid cell into a df ===#
+list_df = []
+for i, lat_lon in enumerate(list_energy_lat_lon):
+    lat = float(lat_lon.split('_')[0])
+    lon = float(lat_lon.split('_')[1])
+    df = pd.DataFrame(index=vic_energy_daily['Tair'].coords['date'].values) # create df
+    df['cell'] = i+1  # cell number
+    df['Tair'] = vic_energy_daily['Tair'].loc[:,lat,lon].values # Tair
+    df['vp'] = vic_energy_daily['vp'].loc[:,lat,lon].values # vp
+    df['Shortwave'] = vic_energy_daily['Shortwave'].loc[:,lat,lon].values # Shortwave
+    df['Longwave'] = vic_energy_daily['Longwave'].loc[:,lat,lon].values # Longwave
+    df['Density'] = vic_energy_daily['Density'].loc[:,lat,lon].values # Density
+    df['Pressure'] = vic_energy_daily['Pressure'].loc[:,lat,lon].values # Pressure
+    df['Wind'] = vic_energy_daily['Wind'].loc[:,lat,lon].values # Wind
+    list_df.append(df)
+
+#=== Combine df of all grid cells together, in a single multiindex df (indice: cell; date) ===#
+list_cell_index = []
+for i in range(len(list_energy_lat_lon)):
+    list_cell_index.append('cell{}'.format(i+1))
+df_energy = pd.concat(list_df, keys=list_cell_index)
+
+#=== Switch order of indice (to: date; cell), then sort ===#
+df_energy = df_energy.reorder_levels([1,0], axis=0)
+df_energy = df_energy.sortlevel(0)
+
+#====================================================#
+# Write data to file
+#====================================================#
+np.savetxt(cfg['OUTPUT']['rbm_energy_file'], df_energy.values, fmt='%d %.1f %.1f %.4f %.4f %.3f %.1f %.1f')
+
+
+
+
 
 
 
